@@ -241,6 +241,25 @@ public class dspread_pos_plugin extends CordovaPlugin {
 //		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();
         callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode"+mAdapter.toString(),"onRequestQposConnected");
+        if(mAdapter.isEnabled()){
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isEnabled","onRequestQposConnected");
+			String devices="";
+			//deviceItemList=new ArrayList<DeviceItem>(); 
+			Set<BluetoothDevice> pairedDevices=mAdapter.getBondedDevices();
+			if (pairedDevices.size() > 0) {
+				//String[] macAddress = new String[pairedDevices.size()];
+				int i = 0;
+				for(BluetoothDevice device: pairedDevices){
+					//macAddress[i]=device.getName() + "(" + device.getAddress() + "),";
+                    if(i!=0){devices +=",";}
+					devices +=device.getName()+"|"+device.getAddress();
+				i++;}
+				//callback(devices);
+                callbackJs(devices,"addrow");
+			}				
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getBondedDevices size "+pairedDevices.size(),"onRequestQposConnected");
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getBondedDevices "+devices,"onRequestQposConnected");
+		}
 		//if(pairedDevice!=null){//this used for printer
 		//	printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
 		//	printerName=pairedDevice.get("deviceName");
