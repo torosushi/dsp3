@@ -51,6 +51,7 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -96,6 +97,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			address = address.substring(a+1);
 			TRACE.d("address==="+address);
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
+             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+address,"onRequestQposConnected");
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
 			pos.doTrade(20);
@@ -119,8 +121,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			pos.disconnectBT();
 		}else if(action.equals("getQposInfo")){//get the pos info
 			pos.getQposInfo();
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getQposInfo ","onRequestQposConnected");
 		}else if(action.equals("getQposId")){//get the pos id
 			pos.getQposId(20);
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getQposId ","onRequestQposConnected");
 		}else if(action.equals("updateIPEK")){//update the ipek key
 			String ipekGroup=args.getString(0);
 			String trackksn=args.getString(1);
@@ -165,7 +169,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	}
 
 	public static byte[] readAssetsLine(String fileName, Context context) {
-
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
 			android.content.ContextWrapper contextWrapper = new ContextWrapper(context);
@@ -227,15 +230,17 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		listener = new MyPosListener();
 		pos = QPOSService.getInstance(mode);
 		if (pos == null) {
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode unknown ","onRequestQposConnected");
 			TRACE.d("CommunicationMode unknow");
 			return;
 		}
 		pos.setConext(cordova.getActivity());
 		Handler handler = new Handler(Looper.myLooper());
-		pos.initListener(handler, listener);
+		pos.initListener(handler, listener);//audioJACK only?
 //		sdkVersion = pos.getSdkVersion();
 //		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();
+        callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode"+mAdapter.toString(),"onRequestQposConnected");
 		//if(pairedDevice!=null){//this used for printer
 		//	printerAddress=pairedDevice.get("deviceAddress");//get the S85 printer address and name
 		//	printerName=pairedDevice.get("deviceName");
@@ -249,6 +254,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		if (adapter != null && !adapter.isEnabled()) {//表示蓝牙不可用
 			Intent enabler = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			activity.startActivity(enabler);
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" ACTION_REQUEST_ENABLE ","onRequestQposConnected");
 		}
 		lm = (LocationManager) activity.getSystemService(activity.LOCATION_SERVICE);
 		boolean ok = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -258,9 +264,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				// 没有权限，申请权限。
 				// 申请授权。
 				cordova.requestPermission(this,100,Manifest.permission.ACCESS_COARSE_LOCATION);
+                callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" ACCESS_COARSE_LOCATION ","onRequestQposConnected");
 			} else {
 				// 有权限了，去放肆吧。
 				Toast.makeText(activity, "Has permission!", Toast.LENGTH_SHORT).show();
+                callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" Has permission! ","onRequestQposConnected");
 			}
 		} else {
 			Log.e("BRG", "系统检测到未开启GPS定位服务");
@@ -268,6 +276,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			Intent intent = new Intent();
 			intent.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			activity.startActivity(intent);
+             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" ACTION_LOCATION_SOURCE_SETTINGS","onRequestQposConnected");
 		}
 		//if (Build.VERSION.SDK_INT >= 23) {
 		//    if(!cordova.hasPermission("android.permission.ACCESS_FINE_LOCATION")){
@@ -289,6 +298,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 						&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					// 权限被用户同意。
 					Toast.makeText(activity, "Has open the permission!", Toast.LENGTH_LONG).show();
+                    callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" PERMISSION_GRANTED","onRequestQposConnected");
 				} else {
 					// 权限被用户拒绝了。
 					Toast.makeText(activity, "Permission has been limited", Toast.LENGTH_LONG).show();
@@ -697,6 +707,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onError(Error arg0) {
 			TRACE.d("onError");
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError ","onRequestQposConnected");
 			if (arg0 == Error.CMD_NOT_AVAILABLE) {
 				TRACE.d("command_not_available");
 			} else if (arg0 == Error.TIMEOUT) {
@@ -874,21 +885,21 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onQposIdResult(Hashtable<String, String> arg0) {
+            String content = "";
 			if(arg0!=null){
 				String posId = arg0.get("posId") == null ? "" : arg0
 						.get("posId");
 				String csn = arg0.get("csn") == null ? "" : arg0
 						.get("csn");
 				String psamId=arg0.get("psamId") == null ? "" : arg0
-						.get("psamId");
-
-				String content = "";
+						.get("psamId");				
 				content += "posId" + posId + "\n";
 				content += "csn: " + csn + "\n";
 				content += "conn: " + pos.getBluetoothState() + "\n";
 				content += "psamId: " + psamId + "\n";
 				callback(content);
 			}
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onQposIdResult "+content,"onRequestQposConnected");
 		}
 
 		@Override
@@ -922,6 +933,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			content += "isSupportedTrack2" + isSupportedTrack2 + "\n";
 			content += "isSupportedTrack3" + isSupportedTrack3 + "\n";
 			callback(content);
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onQposInfoResult "+content,"onRequestQposConnected");
 		}
 
 		@Override
@@ -1038,6 +1050,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			//go online
 			String str = "5A0A6214672500000000056F5F24032307315F25031307085F2A0201565F34010182027C008407A00000033301018E0C000000000000000002031F009505088004E0009A031406179C01009F02060000000000019F03060000000000009F0702AB009F080200209F0902008C9F0D05D86004A8009F0E0500109800009F0F05D86804F8009F101307010103A02000010A010000000000CE0BCE899F1A0201569F1E0838333230314943439F21031826509F2608881E2E4151E527899F2701809F3303E0F8C89F34030203009F3501229F3602008E9F37042120A7189F4104000000015A0A6214672500000000056F5F24032307315F25031307085F2A0201565F34010182027C008407A00000033301018E0C000000000000000002031F00";
 			pos.sendOnlineProcessResult("8A023030"+str);
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestOnlineProcess "+"8A023030"+str,"onRequestQposConnected");
 		}
 
 		@Override
@@ -1052,6 +1065,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			TRACE.w("onRequestQposDisconnected");
 //			Toast.makeText(cordova.getActivity(), "onRequestQposDisconnected", Toast.LENGTH_LONG).show();
 			callback("onRequestQposDisconnected");
+            callbackJs("onRequestQposDisconnected","onRequestQposConnected");
 		}
 
 		@Override
@@ -1187,6 +1201,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		public void onRequestWaitingUser() {
 			TRACE.d("onRequestWaitingUser()");
 			callback("please insert/swipe/tap card");
+            callbackJs("please insert/swipe/tap card","onRequestQposConnected");
 		}
 
 		@Override
@@ -1231,6 +1246,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			// TODO Auto-generated method stub
 			if (arg0){
 				callbackJs("update emv configure success","onReturnCustomConfigResult");
+                callbackJs("update emv configure success","onRequestQposConnected");
 			}
 		}
 
