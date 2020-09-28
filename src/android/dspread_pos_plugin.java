@@ -708,10 +708,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				callback(content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED) ) {
 				TRACE.d("transaction_declined");
-                content +='NFC_DECLINED';
+                content +="NFC_DECLINED";
 			}else if (arg0 == DoTradeResult.NO_RESPONSE) {
 				TRACE.d("card_no_response");
-                content +='NO_RESPONSE';
+                content +="NO_RESPONSE";
 			}
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult "+content,"onRequestQposConnected");
 		}
