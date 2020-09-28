@@ -501,6 +501,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult ","onRequestQposConnected");
+            String content ="";
 			if (arg0 == DoTradeResult.NONE) {
 				TRACE.d("no_card_detected");
 			} else if (arg0 == DoTradeResult.ICC) {
@@ -512,7 +514,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else if (arg0 == DoTradeResult.BAD_SWIPE) {
 				TRACE.d("bad_swipe");
 			} else if (arg0 == DoTradeResult.MCR) {//
-				String content ="swipe card:";
+				content +="swipe card:";
 				String formatID = arg1.get("formatID");
 				if (formatID.equals("31") || formatID.equals("40") || formatID.equals("37") || formatID.equals("17") || formatID.equals("11") || formatID.equals("10")) {
 					String maskedPAN = arg1.get("maskedPAN");
@@ -600,7 +602,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else if ((arg0 == DoTradeResult.NFC_ONLINE) || (arg0 == DoTradeResult.NFC_OFFLINE)) {
 				TRACE.d(arg0+", arg1: " + arg1);
 //				nfcLog=arg1.get("nfcLog");
-				String content = "tap_card";
+				content += "tap_card";
 				String formatID = arg1.get("formatID");
 				if (formatID.equals("31") || formatID.equals("40")
 						|| formatID.equals("37") || formatID.equals("17")
@@ -706,9 +708,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				callback(content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED) ) {
 				TRACE.d("transaction_declined");
+                content +='NFC_DECLINED';
 			}else if (arg0 == DoTradeResult.NO_RESPONSE) {
 				TRACE.d("card_no_response");
+                content +='NO_RESPONSE';
 			}
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult "+content,"onRequestQposConnected");
 		}
 
 		@Override
@@ -726,7 +731,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onError(Error arg0) {
 			TRACE.d("onError");
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError ","onRequestQposConnected");
+            //String content ="";
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError "+arg0,"onRequestQposConnected");
 			if (arg0 == Error.CMD_NOT_AVAILABLE) {
 				TRACE.d("command_not_available");
 			} else if (arg0 == Error.TIMEOUT) {
