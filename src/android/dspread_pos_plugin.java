@@ -172,30 +172,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
             String type=args.getString(0);
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" testIng type "+type,"onRequestQposConnected");
             switch (type) {
-                case 'A':
+                case 'AA':
 					//AU 036 CN 156
                     pos.setPosDisplayAmountFlag(true);
 					pos.setAmount("7.50","","156",transactionType);
 					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" A "+transactionType,"onRequestQposConnected");
                     break;
-                case 'B':
+                case 'BB':
                     pos.getCardNo();
-                    break;
-                case 'C':
-                    System.out.println("Wednesday");
-                    break;
-                case 4:
-                    System.out.println("Thursday");
-                    break;
-                case 5:
-                    System.out.println("Friday");
-                    break;
-                case 6:
-                    System.out.println("Saturday");
-                    break;
-                case 7:
-                    System.out.println("Sunday");
-                    break;
+                    break;                
             }
         }
 		return true;
