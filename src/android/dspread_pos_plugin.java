@@ -177,11 +177,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					//"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"
                     pos.setPosDisplayAmountFlag(true);
 					switch (args.getString(2)) {
-                		case "GOODS":TransactionType=TransactionType.GOODS;break;
-						case "SERVICES":TransactionType=TransactionType.SERVICES;break; 
-						case "PAYMENT":TransactionType=TransactionType.PAYMENT;break; 
+                		case "GOODS":transactionType=TransactionType.GOODS;break;
+						case "SERVICES":transactionType=TransactionType.SERVICES;break; 
+						case "PAYMENT":transactionType=TransactionType.PAYMENT;break; 
 					}
-					pos.setAmount(args.getString(1),"","036",TransactionType);
+					pos.setAmount(args.getString(1),"","036",transactionType);
 					//pos.setAmount("7.50","","156",transactionType);
 					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+type+" "+args.getString(1)+" "+args.getString(2),"onRequestQposConnected");
                     break;
