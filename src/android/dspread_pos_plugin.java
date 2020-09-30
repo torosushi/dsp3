@@ -169,7 +169,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
             //boolean isAutoConnect=args.getBoolean(0);
 			//String foo=args.getString(0);
             //int type=Integer.parseInt(foo);
-            int type=args.getString(0);
+            String type=args.getString(0);
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" testIng type "+type,"onRequestQposConnected");
             switch (type) {
                 case 'A':
