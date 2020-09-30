@@ -194,7 +194,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					//Error.CMD_NOT_AVAILABLE
                     break; 
 				case "dd":
-                    pos.resetPosStatus();
+                    pos.getUpdateCheckValue();
 					//Error.CMD_NOT_AVAILABLE
                     break; 	 	 
             }
