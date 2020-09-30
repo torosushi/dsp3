@@ -172,13 +172,13 @@ public class dspread_pos_plugin extends CordovaPlugin {
             String type=args.getString(0);
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" testIng type "+type,"onRequestQposConnected");
             switch (type) {
-                case 'AA':
+                case 'aa':
 					//AU 036 CN 156
                     pos.setPosDisplayAmountFlag(true);
 					pos.setAmount("7.50","","156",transactionType);
 					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" A "+transactionType,"onRequestQposConnected");
                     break;
-                case 'BB':
+                case 'bb':
                     pos.getCardNo();
                     break;                
             }
