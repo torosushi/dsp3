@@ -53,7 +53,7 @@ var posPlug={
 		exec(success,fail,"dspread_pos_plugin","printText",[content]);
 	},	
 	testIng:function(success,fail,inte){
-		exec(success,fail,"dspread_pos_plugin","testIng",[inte]);
+		exec(success,fail,"dspread_pos_plugin","testIng",inte);
 	}	
 };
 module.exports=posPlug;
