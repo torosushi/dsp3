@@ -805,13 +805,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			// TODO Auto-generated method stub
 
 		}
-
-		@Override
-		public void onGetCardNoResult(String arg0) {
-			// TODO Auto-generated method stub
-
-		}
-
 		@Override
 		public void onGetInputAmountResult(boolean arg0, String arg1) {
 			// TODO Auto-generated method stub
