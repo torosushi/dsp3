@@ -1220,7 +1220,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onRequestUpdateKey(String arg0) {
-
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestUpdateKey "+arg0,"onRequestQposConnected");
 		}
 
 		@Override
