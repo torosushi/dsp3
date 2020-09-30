@@ -174,13 +174,20 @@ public class dspread_pos_plugin extends CordovaPlugin {
             switch (type) {
                 case "aa":
 					//AU 036 CN 156
+					//"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"
                     pos.setPosDisplayAmountFlag(true);
-					pos.setAmount("7.50","","156",transactionType);
-					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" A "+transactionType,"onRequestQposConnected");
+					pos.setAmount(args.getString(1),"","036",args.getString(2));
+					//pos.setAmount("7.50","","156",transactionType);
+					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+type+" "+args.getString(1)+" "+args.getString(2),"onRequestQposConnected");
                     break;
                 case "bb":
                     pos.getCardNo();
-                    break;                
+					//Error.CMD_NOT_AVAILABLE
+                    break;               
+				case "cc":
+                    pos.resetPosStatus();
+					//Error.CMD_NOT_AVAILABLE
+                    break;  	 
             }
         }
 		return true;
@@ -1123,7 +1130,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestSetAmount() {
 			//the below list represent the transaction type
-//			String[] transactionTypes = new String[] {"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"  };
+//			String[] transactionTypes = new String[] {"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"};
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestSetAmount enter amount,transtype","onRequestQposConnected");
+			return true;
 			pos.setPosDisplayAmountFlag(true);
 			pos.setAmount("12", "", "156", transactionType);
 			TRACE.d("onRequestSetAmount");
