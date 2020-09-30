@@ -97,10 +97,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			address = address.substring(a+1);
 			TRACE.d("address==="+address);
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
-             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+address,"onRequestQposConnected");
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+address,"onRequestQposConnected");
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
 			pos.doTrade(20);
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+Integer.parseInt(args.getString(0)),"onRequestQposConnected");
 		}else if(action.equals("getDeviceList")){//get all scaned devices
 			TRACE.w("getDeviceList===");
 			posFlag=true;
@@ -164,7 +165,39 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			byte[] bytes = readAssetsLine("emv_profile_tlv.xml", cordova.getActivity());
 			TRACE.d("bytes: "+ QPOSUtil.byteArray2Hex(bytes));
 			pos.updateEMVConfigByXml(new String(bytes));
-		}
+		}else if(action.equals("testIng")){
+            //boolean isAutoConnect=args.getBoolean(0);
+			//String foo=args.getString(0);
+            //int type=Integer.parseInt(foo);
+            int type=args.getString(0);
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" testIng type "+type,"onRequestQposConnected");
+            switch (type) {
+                case 'A':
+					//AU 036 CN 156
+                    pos.setPosDisplayAmountFlag(true);
+					pos.setAmount("7.50","","156",transactionType);
+					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" A "+transactionType,"onRequestQposConnected");
+                    break;
+                case 'B':
+                    pos.getCardNo();
+                    break;
+                case 'C':
+                    System.out.println("Wednesday");
+                    break;
+                case 4:
+                    System.out.println("Thursday");
+                    break;
+                case 5:
+                    System.out.println("Friday");
+                    break;
+                case 6:
+                    System.out.println("Saturday");
+                    break;
+                case 7:
+                    System.out.println("Sunday");
+                    break;
+            }
+        }
 		return true;
 	}
 
@@ -416,7 +449,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 	//our sdk api callback(success or fail)
 	class MyPosListener implements QPOSServiceListener {
-
+		@Override
+		public void onGetCardNoResult(String arg0) {
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError "+arg0,"onRequestQposConnected");
+		}
 		@Override
 		public void getMifareCardVersion(Hashtable<String, String> arg0) {
 			// TODO Auto-generated method stub
