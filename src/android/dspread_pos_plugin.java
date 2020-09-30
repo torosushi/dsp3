@@ -184,19 +184,32 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					pos.setAmount(args.getString(1),"","036",transactionType);
 					//pos.setAmount("7.50","","156",transactionType);
 					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+type+" "+args.getString(1)+" "+args.getString(2),"onRequestQposConnected");
-                    break;
+				break;
                 case "bb":
                     pos.getCardNo();
 					//Error.CMD_NOT_AVAILABLE
-                    break;               
+				break;               
 				case "cc":
                     pos.resetPosStatus();
 					//Error.CMD_NOT_AVAILABLE
-                    break; 
+				break; 
 				case "dd":
                     pos.getUpdateCheckValue();
 					//Error.CMD_NOT_AVAILABLE
-                    break; 	 	 
+				break;
+				case "ee":
+					//AU 036 CN 156
+					//"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"
+                    pos.setPosDisplayAmountFlag(false);
+					switch (args.getString(2)) {
+                		case "GOODS":transactionType=TransactionType.GOODS;break;
+						case "SERVICES":transactionType=TransactionType.SERVICES;break; 
+						case "PAYMENT":transactionType=TransactionType.PAYMENT;break; 
+					}
+					pos.setAmount(args.getString(1),"","036",transactionType);
+					//pos.setAmount("7.50","","156",transactionType);
+					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+type+" "+args.getString(1)+" "+args.getString(2),"onRequestQposConnected");
+				break;	 	 
             }
         }
 		return true;
@@ -1220,6 +1233,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onRequestUpdateKey(String arg0) {
+			//getUpdateCheckValue
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestUpdateKey "+arg0,"onRequestQposConnected");
 		}
 
