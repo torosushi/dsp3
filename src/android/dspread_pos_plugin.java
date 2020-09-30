@@ -1137,9 +1137,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			//the below list represent the transaction type
 //			String[] transactionTypes = new String[] {"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"};
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestSetAmount enter amount,transtype","onRequestQposConnected");
-			return true;
-			pos.setPosDisplayAmountFlag(true);
-			pos.setAmount("12", "", "156", transactionType);
+
+			/*pos.setPosDisplayAmountFlag(true);
+			pos.setAmount("12", "", "156", transactionType);*/
 			TRACE.d("onRequestSetAmount");
 		}
 
