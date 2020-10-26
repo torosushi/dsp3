@@ -156,7 +156,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			String checkValue=args.getString(1);
 			pos.setMasterKey(key,checkValue);
 		}else if(action.equals("updatePosFirmware")){//update pos firmware
-			byte[] data=readLine("upgrader.asc");//upgrader.asc place in the assets folder
+			byte[] data=readLine("app/files/upgrader.asc");//upgrader.asc place in the assets folder
 			pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice address
 			UpdateThread updateThread = new UpdateThread();
 			updateThread.start();
