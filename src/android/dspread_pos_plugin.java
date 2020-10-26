@@ -97,6 +97,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			address = address.substring(a+1);
 			TRACE.d("address==="+address);
 			pos.connectBluetoothDevice(isAutoConnect, 20, address);
+			blueToothAddress=address;
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+address,"onRequestQposConnected");
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
@@ -156,9 +157,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			String checkValue=args.getString(1);
 			pos.setMasterKey(key,checkValue);
 		}else if(action.equals("updatePosFirmware")){//update pos firmware
-			byte[] data=readLine("app/files/upgrader.asc");//upgrader.asc place in the assets folder
-			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" updatePosFirmware "+data,"onRequestQposConnected");
+			byte[] data=readLine("www/app/files/upgrader.asc");//upgrader.asc place in the assets folder			
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" updatePosFirmware "+blueToothAddress,"onRequestQposConnected");
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" updatePosFirmware "+data,"onRequestQposConnected");
 			pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice address
 			UpdateThread updateThread = new UpdateThread();
 			updateThread.start();
