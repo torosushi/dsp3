@@ -157,6 +157,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			pos.setMasterKey(key,checkValue);
 		}else if(action.equals("updatePosFirmware")){//update pos firmware
 			byte[] data=readLine("app/files/upgrader.asc");//upgrader.asc place in the assets folder
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" updatePosFirmware "+data,"onRequestQposConnected");
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" updatePosFirmware "+blueToothAddress,"onRequestQposConnected");
 			pos.updatePosFirmware(data, blueToothAddress);//deviceAddress is BluetoothDevice address
 			UpdateThread updateThread = new UpdateThread();
 			updateThread.start();
@@ -1510,6 +1512,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onUpdatePosFirmwareResult(UpdateInformationResult arg0) {
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onUpdatePosFirmwareResult "+arg0,"onRequestQposConnected");
 			if(arg0==null){
 				return;
 			}else if(arg0==UpdateInformationResult.UPDATE_FAIL){
