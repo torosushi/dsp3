@@ -191,6 +191,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
                 case "bb":
                     //pos.getCardNo();
 					//Error.CMD_NOT_AVAILABLE
+					TRACE.d("terminalTime =="+terminalTime);
 					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+type+" "+args.getString(1)+" "+terminalTime,"onRequestQposConnected");
 					pos.getIccCardNo(terminalTime);
 				break;               
