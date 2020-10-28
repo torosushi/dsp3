@@ -473,9 +473,13 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 	//our sdk api callback(success or fail)
 	class MyPosListener implements QPOSServiceListener {
+        @Override
+		public void onGetIccCardNoResult(String arg0) {
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onGetIccCardNoResult "+arg0,"onRequestQposConnected");
+		}
 		@Override
 		public void onGetCardNoResult(String arg0) {
-			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError "+arg0,"onRequestQposConnected");
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onGetCardNoResult "+arg0,"onRequestQposConnected");
 		}
 		@Override
 		public void getMifareCardVersion(Hashtable<String, String> arg0) {
