@@ -1,4 +1,3 @@
-
 var exec=require('cordova/exec');
 var posPlug={
 	scanQPos2Mode:function(success,fail){
@@ -54,6 +53,9 @@ var posPlug={
 	},	
 	testIng:function(success,fail,inte){
 		exec(success,fail,"dspread_pos_plugin","testIng",inte);
-	}	
+    },
+    getICCCardNo:function(success,fail){
+    	exec(success,fail,"dspread_pos_plugin","getICCCardNo",[]);
+    }
 };
 module.exports=posPlug;
