@@ -101,8 +101,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+address,"onRequestQposConnected");
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
-			pos.doTrade(20);
-			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+Integer.parseInt(args.getString(0)),"onRequestQposConnected");
+			pos.doTrade(20);//Integer.parseInt(args.getString(0))
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+args.getString(0),"onRequestQposConnected");
 		}else if(action.equals("getDeviceList")){//get all scaned devices
 			TRACE.w("getDeviceList===");
 			posFlag=true;
@@ -473,10 +473,6 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 	//our sdk api callback(success or fail)
 	class MyPosListener implements QPOSServiceListener {
-        @Override
-		public void onGetIccCardNoResult(String arg0) {
-			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onGetIccCardNoResult "+arg0,"onRequestQposConnected");
-		}
 		@Override
 		public void onGetCardNoResult(String arg0) {
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onGetCardNoResult "+arg0,"onRequestQposConnected");
