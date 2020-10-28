@@ -168,6 +168,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			byte[] bytes = readAssetsLine("emv_profile_tlv.xml", cordova.getActivity());
 			TRACE.d("bytes: "+ QPOSUtil.byteArray2Hex(bytes));
 			pos.updateEMVConfigByXml(new String(bytes));
+		}else if(action.equals("getICCCardNo")){
+			TRACE.d("native--> getICCCardNo");
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getICCCardNo "+terminalTime,"onRequestQposConnected");
+			pos.getIccCardNo(terminalTime);
 		}else if(action.equals("testIng")){
             //boolean isAutoConnect=args.getBoolean(0);
 			//String foo=args.getString(0);
