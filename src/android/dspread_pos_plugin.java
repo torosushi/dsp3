@@ -170,7 +170,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			pos.updateEMVConfigByXml(new String(bytes));
 		}else if(action.equals("getICCCardNo")){
 			TRACE.d("native--> getICCCardNo");
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getICCCardNo "+terminalTime,"onRequestQposConnected");
+            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getICCCardNo ","onRequestQposConnected");
 			pos.getIccCardNo(terminalTime);
 		}else if(action.equals("testIng")){
             //boolean isAutoConnect=args.getBoolean(0);
