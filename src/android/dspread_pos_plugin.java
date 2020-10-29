@@ -102,7 +102,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
 			pos.doTrade(20);//Integer.parseInt(args.getString(0))
-			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+args.getString(0),"onRequestQposConnected");
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" doTrade ","onRequestQposConnected");
 		}else if(action.equals("getDeviceList")){//get all scaned devices
 			TRACE.w("getDeviceList===");
 			posFlag=true;
@@ -210,7 +210,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				case "ee":
 					//AU 036 CN 156
 					//"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"
-                    pos.setPosDisplayAmountFlag(false);
+                    pos.setPosDisplayAmountFlag(true);
 					switch (args.getString(2)) {
                 		case "GOODS":transactionType=TransactionType.GOODS;break;
 						case "SERVICES":transactionType=TransactionType.SERVICES;break; 
@@ -562,7 +562,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult ","onRequestQposConnected");
-            String content ="";
+            String content="traderes: ";
 			if (arg0 == DoTradeResult.NONE) {
 				TRACE.d("no_card_detected");
 			} else if (arg0 == DoTradeResult.ICC) {
