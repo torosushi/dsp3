@@ -133,7 +133,6 @@ typedef void(^imgBlock)(NSString * data);
     aStr = [aStr stringByAppendingString:temp];
     
     NSLog(@"posid == %@",aStr);
-
 }
 
 -(void) onQposInfoResult: (NSDictionary*)posInfoData{
@@ -157,7 +156,6 @@ typedef void(^imgBlock)(NSString * data);
         aStr = [aStr stringByAppendingString:@"\n"];
         aStr = [aStr stringByAppendingString:@"Battery Level: "];
         aStr = [aStr stringByAppendingString:posInfoData[@"batteryLevel"]];
-        
     }else{
         aStr = [aStr stringByAppendingString:@"\n"];
         aStr = [aStr stringByAppendingString:@"Battery Percentage: "];
@@ -178,15 +176,12 @@ typedef void(^imgBlock)(NSString * data);
     aStr = [aStr stringByAppendingString:@"\n"];
     aStr = [aStr stringByAppendingString:@"Track 2 Supported: "];
     aStr = [aStr stringByAppendingString:posInfoData[@"isSupportedTrack2"]];
-    
     aStr = [aStr stringByAppendingString:@"\n"];
     aStr = [aStr stringByAppendingString:@"Track 3 Supported: "];
     aStr = [aStr stringByAppendingString:posInfoData[@"isSupportedTrack3"]];
-    
     aStr = [aStr stringByAppendingString:@"\n"];
     aStr = [aStr stringByAppendingString:@"updateWorkKeyFlag: "];
     aStr = [aStr stringByAppendingString:posInfoData[@"updateWorkKeyFlag"]];
-    
     NSString *posinfo = aStr;
 }
 
@@ -215,9 +210,16 @@ typedef void(^imgBlock)(NSString * data);
 -(void)onBluetoothName2Mode:(NSString *)bluetoothName{
      if (bluetoothName != nil && ![bluetoothName isEqualToString:@""]) {
            NSLog(@"蓝牙名: %@",bluetoothName);
-           NSString *jsStr = [NSString stringWithFormat:@"addrow('%@')",bluetoothName];
-           [self.commandDelegate evalJs:jsStr];
+         if (![allBluetooth containsObject:bluetoothName]) {
+            [allBluetooth addObject:bluetoothName];
+            [self nativeCallJsFunction:bluetoothName functionName:@"addrow"];
+         }
        }
+}
+
+- (void)nativeCallJsFunction:(NSString *)parameter functionName:(NSString *)functionName{
+    NSString *jsStr = [NSString stringWithFormat:@"%@('%@')",functionName,parameter];
+    [self.commandDelegate evalJs:jsStr];
 }
     
 -(NSString* )getEMVStr:(NSString *)emvStr{
@@ -303,8 +305,7 @@ typedef void(^imgBlock)(NSString * data);
     self.terminalTime = [dateFormatter stringFromDate:[NSDate date]];
     mTransType = TransactionType_GOODS;
     _currencyCode = @"156";
-    [self.mPos setDoTradeMode:DoTradeMode_CHECK_CARD_NO_IPNUT_PIN];
-    [self.mPos setCardTradeMode:CardTradeMode_SWIPE_TAP_INSERT_CARD_NOTUP];
+    [self.mPos setCardTradeMode:CardTradeMode_SWIPE_TAP_INSERT_CARD];
     [self.mPos doTrade:30];
 }
 
@@ -312,12 +313,13 @@ typedef void(^imgBlock)(NSString * data);
     amount = @"100";
     [self.mPos setAmount:amount aAmountDescribe:@"1000" currency:@"156" transactionType:TransactionType_GOODS];
 }
+
 -(void) onRequestWaitingUser{
     NSString *displayStr  =@"Please insert/swipe/tap card now.";
 }
+
 -(void) onDHError: (DHError)errorState{
     NSString *msg = @"";
-    
     if(errorState ==DHError_TIMEOUT) {
         msg = @"Pos no response";
     } else if(errorState == DHError_DEVICE_RESET) {
@@ -347,7 +349,6 @@ typedef void(^imgBlock)(NSString * data);
     }else if(errorState == DHError_AMOUNT_OUT_OF_LIMIT){
         msg = @"Amount out of limit.";
     }
-    
     NSString *error = msg;
     NSLog(@"onError = %@",msg);
 }
@@ -357,8 +358,7 @@ typedef void(^imgBlock)(NSString * data);
     NSLog(@"onDoTradeResult?>> result %ld",(long)result);
     if (result == DoTradeResult_NONE) {
         NSString *display = @"No card detected. Please insert or swipe card again and press check card.";
-        [self.mPos doTrade:30];
-        NSLog(@"%@",display);
+         [self nativeCallJsFunction:display functionName:@"posresult"];
     }else if (result==DoTradeResult_ICC) {
         NSString *display = @"ICC Card Inserted";
         NSLog(@"%@",display);
@@ -366,9 +366,9 @@ typedef void(^imgBlock)(NSString * data);
     }else if(result==DoTradeResult_NOT_ICC){
         NSString *display = @"Card Inserted (Not ICC)";
         NSLog(@"%@",display);
+        [self nativeCallJsFunction:display functionName:@"posresult"];
     }else if(result==DoTradeResult_MCR){
-        //        [pos getCardNo]
-        ;        NSLog(@"decodeData: %@",decodeData);
+        NSLog(@"decodeData: %@",decodeData);
         NSString *formatID = [NSString stringWithFormat:@"Format ID: %@\n",decodeData[@"formatID"]] ;
         NSString *maskedPAN = [NSString stringWithFormat:@"Masked PAN: %@\n",decodeData[@"maskedPAN"]];
         NSString *expiryDate = [NSString stringWithFormat:@"Expiry Date: %@\n",decodeData[@"expiryDate"]];
@@ -404,9 +404,12 @@ typedef void(^imgBlock)(NSString * data);
         msg = [msg stringByAppendingString:pinBlock];
         msg = [msg stringByAppendingString:encPAN];
         NSString *display = msg;
-         amount = @"";
+        amount = @"";
         NSString *displayAmount = @"";
-        
+        [self nativeCallJsFunction:display functionName:@"posresult"];
+        NSRange range = [decodeData[@"encTrack2"] rangeOfString:@"D"];
+        NSString *cardNo = [decodeData[@"encTrack2"] substringToIndex:range.location];
+        NSLog(@"cardNo/expire: %@ - %@", cardNo, decodeData[@"expiryDate"]);
     }else if(result==DoTradeResult_NFC_OFFLINE || result == DoTradeResult_NFC_ONLINE){
         NSLog(@"decodeData: %@",decodeData);
         NSString *formatID = [NSString stringWithFormat:@"Format ID: %@\n",decodeData[@"formatID"]] ;
@@ -448,13 +451,24 @@ typedef void(^imgBlock)(NSString * data);
             NSDictionary *mDic = [self.mPos getNFCBatchData];
             NSString *tlv;
             if(mDic !=nil){
-                tlv= [NSString stringWithFormat:@"NFCBatchData: %@\n",mDic[@"tlv"]];
+                tlv= [NSString stringWithFormat:@"NFCBatchData: %@",mDic[@"tlv"]];
             }else{
                 tlv = @"";
             }
             NSString *displayStr = [msg stringByAppendingString:tlv];
             NSLog(@"%@",displayStr);
+            displayStr = [displayStr stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+            [self nativeCallJsFunction:displayStr functionName:@"posresult"];
             amount = @"";
+            
+            NSDictionary *dict1 = [self.mPos getICCTag:1 tagCount:1 tagArrStr:@"5A"];
+            NSString *cardNo = dict1[@"tlv"];
+            cardNo = [cardNo substringFromIndex:4];
+            cardNo = [QPOSUtil asciiFormatString:[QPOSUtil HexStringToByteArray:cardNo]];
+            NSDictionary *dict2 = [self.mPos getICCTag:1 tagCount:1 tagArrStr:@"5F24"];
+            NSString *expire = dict2[@"tlv"];
+            expire = [expire substringFromIndex:6];
+            NSLog(@"cardNo/expire: %@ - %@", cardNo, expire);
         });
         
     }else if(result==DoTradeResult_NFC_DECLINED){
@@ -499,34 +513,22 @@ typedef void(^imgBlock)(NSString * data);
 -(void) onRequestTime{
     [self.mPos sendTime:self.terminalTime];
 }
--(void) onRequestIsServerConnected{
-    NSString *msg = @"Replied connected.";
-    msgStr = @"Online process requested.";
-    [self conductEventByMsg:msgStr];
-}
 
--(void)conductEventByMsg:(NSString *)msg{
-    if ([msg isEqualToString:@"Online process requested."]){
-        [self.mPos isServerConnected:YES];
-        
-    }else if ([msg isEqualToString:@"Request data to server."]){
-        
-        [self.mPos sendOnlineProcessResult:@"8A023030"];
-        
-    }else if ([msg isEqualToString:@"Transaction Result"]){
-        
-    }
-    
-    
-}
 -(void) onRequestOnlineProcess: (NSString*) tlv{
     NSLog(@"tlv == %@",tlv);
     NSLog(@"onRequestOnlineProcess = %@",[[QPOSService sharedInstance] anlysEmvIccData:tlv]);
-
     NSString *msg = @"Replied success.";
-    NSString *displayStr = tlv;
+    NSString *displayStr = [@"onRequestOnlineProcess: " stringByAppendingString:tlv];
     msgStr = @"Request data to server.";
-    [self conductEventByMsg:msgStr];
+    NSDictionary *dict1 = [self.mPos getICCTag:0 tagCount:1 tagArrStr:@"5A"];
+    NSString *cardNo = dict1[@"tlv"];
+    cardNo = [cardNo substringFromIndex:4];
+    NSDictionary *dict2 = [self.mPos getICCTag:0 tagCount:1 tagArrStr:@"5F24"];
+    NSString *expire = dict2[@"tlv"];
+    expire = [expire substringFromIndex:6];
+    NSLog(@"cardNo/expire: %@ - %@", cardNo, expire);
+    [self nativeCallJsFunction:displayStr functionName:@"posresult"];
+    [self.mPos sendOnlineProcessResult:@"8A023030"];
 }
 
 -(void) onRequestTransactionResult: (TransactionResult)transactionResult{
@@ -538,41 +540,29 @@ typedef void(^imgBlock)(NSString * data);
             message = [message stringByAppendingString:cashbackAmount];
         }
         messageTextView = message;
-//        self.textViewLog.backgroundColor = [UIColor greenColor];
     }else if(transactionResult == TransactionResult_TERMINATED) {
-        [self clearDisplay];
         messageTextView = @"Terminated";
     } else if(transactionResult == TransactionResult_DECLINED) {
         messageTextView = @"Declined";
     } else if(transactionResult == TransactionResult_CANCEL) {
-        [self clearDisplay];
         messageTextView = @"Cancel";
     } else if(transactionResult == TransactionResult_CAPK_FAIL) {
-        [self clearDisplay];
         messageTextView = @"Fail (CAPK fail)";
     } else if(transactionResult == TransactionResult_NOT_ICC) {
-        [self clearDisplay];
         messageTextView = @"Fail (Not ICC card)";
     } else if(transactionResult == TransactionResult_SELECT_APP_FAIL) {
-        [self clearDisplay];
         messageTextView = @"Fail (App fail)";
     } else if(transactionResult == TransactionResult_DEVICE_ERROR) {
-        [self clearDisplay];
         messageTextView = @"Pos Error";
     } else if(transactionResult == TransactionResult_CARD_NOT_SUPPORTED) {
-        [self clearDisplay];
         messageTextView = @"Card not support";
     } else if(transactionResult == TransactionResult_MISSING_MANDATORY_DATA) {
-        [self clearDisplay];
         messageTextView = @"Missing mandatory data";
     } else if(transactionResult == TransactionResult_CARD_BLOCKED_OR_NO_EMV_APPS) {
-        [self clearDisplay];
         messageTextView = @"Card blocked or no EMV apps";
     } else if(transactionResult == TransactionResult_INVALID_ICC_DATA) {
-        [self clearDisplay];
         messageTextView = @"Invalid ICC data";
     }else if(transactionResult == TransactionResult_NFC_TERMINATED) {
-        [self clearDisplay];
         messageTextView = @"NFC Terminated";
     }
     NSString *displayStr = messageTextView;
@@ -589,48 +579,44 @@ typedef void(^imgBlock)(NSString * data);
     amount = @"";
 }
 
--(void) onRequestTransactionLog: (NSString*)tlv{
-    NSLog(@"onTransactionLog %@",tlv);
-}
-
 -(void) onRequestBatchData: (NSString*)tlv{
     NSLog(@"onBatchData %@",tlv);
-    tlv = [@"batch data:\n" stringByAppendingString:tlv];
+    tlv = [@"batch data: " stringByAppendingString:tlv];
     NSString *displayStr = tlv;
+    [self nativeCallJsFunction:displayStr functionName:@"posresult"];
 }
 
 -(void) onReturnReversalData: (NSString*)tlv{
     NSLog(@"onReversalData %@",tlv);
-    tlv = [@"reversal data:\n" stringByAppendingString:tlv];
+    tlv = [@"reversal data: " stringByAppendingString:tlv];
     NSString *displayStr = tlv;
+    [self nativeCallJsFunction:displayStr functionName:@"posresult"];
 }
 
 //pos 连接成功的回调
 -(void) onRequestQposConnected{
     NSLog(@"onRequestQposConnected");
+    NSString *displayStr =@"";
     if ([self.bluetoothAddress  isEqual: @"audioType"]) {
-        NSString *displayStr = @"AudioType connected.";
+        displayStr = @"AudioType connected.";
        
     }else{
-        NSString *displayStr = @"Bluetooth connected.";
+        displayStr = @"Bluetooth connected.";
     }
     [self.bt stopQPos2Mode];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"connected"];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.urlCommand.callbackId];
-    
+    [self nativeCallJsFunction:displayStr functionName:@"onRequestQposConnected"];
 }
+
 -(void) onRequestQposDisconnected{
     NSLog(@"onRequestQposDisconnected");
     NSString *displayStr = @"pos disconnected.";
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"disconnect"];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.urlCommand.callbackId];
+    [self nativeCallJsFunction:displayStr functionName:@"onRequestQposDisconnected"];
 }
 
 -(void) onRequestNoQposDetected{
     NSLog(@"onRequestNoQposDetected");
     NSString *displayStr = @"No pos detected.";
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"detected"];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.urlCommand.callbackId];
+    [self nativeCallJsFunction:displayStr functionName:@"onRequestNoQposDetected"];
 }
 
 -(void) onRequestDisplay: (Display)displayMsg{
@@ -658,22 +644,17 @@ typedef void(^imgBlock)(NSString * data);
     }
     NSString *displayStr = msg;
 }
+
 -(void) onReturnGetPinResult:(NSDictionary*)decodeData{
     NSString *aStr = @"pinKsn: ";
     aStr = [aStr stringByAppendingString:decodeData[@"pinKsn"]];
-    
     aStr = [aStr stringByAppendingString:@"\n"];
     aStr = [aStr stringByAppendingString:@"pinBlock: "];
     aStr = [aStr stringByAppendingString:decodeData[@"pinBlock"]];
-    
     NSString *displayStr = aStr;
 }
--(void)clearDisplay{
-    
-}
 
--(void) onRequestUpdateWorkKeyResult:(UpdateInformationResult)updateInformationResult
-{
+-(void) onRequestUpdateWorkKeyResult:(UpdateInformationResult)updateInformationResult{
     NSLog(@"onRequestUpdateWorkKeyResult %ld",(long)updateInformationResult);
     if (updateInformationResult==UpdateInformationResult_UPDATE_SUCCESS) {
         
@@ -683,14 +664,12 @@ typedef void(^imgBlock)(NSString * data);
          NSLog(@"Packet len error");
     }
     else if(updateInformationResult==UpdateInformationResult_UPDATE_PACKET_VEFIRY_ERROR){
-        NSLog(@"Packer vefiry error");
+         NSLog(@"Packer vefiry error");
     }
-    
 }
 
 -(void)executeMyMethodWithCommand:(CDVInvokedUrlCommand*)command withActionName:(NSString *)name{
     self.urlCommand = command;
-    
     [self.commandDelegate runInBackground:^{
         if (name != nil) {
             if ([name isEqualToString:@"scanQPos2Mode"]) {
@@ -826,8 +805,6 @@ typedef void(^imgBlock)(NSString * data);
         NSLog( @"Packet len error");
     }else if(updateInformationResult==UpdateInformationResult_UPDATE_PACKET_VEFIRY_ERROR){
         NSLog( @"Packer vefiry error");
-    }else{
-        NSLog( @"firmware updating...");
     }
 }
 
