@@ -43,6 +43,8 @@ public class QPOSUtil {
 				  return sb.toString();
 			  }
 
+
+
 	/**
 	 * 16进制格式的字符串转成16进制byte 44 --> byte 0x44
 	 * 
