@@ -1,3 +1,4 @@
+cordova.define("posPlugin.dspread_pos_plugin", function(require, exports, module) {
 var exec=require('cordova/exec');
 var posPlug={
 	scanQPos2Mode:function(success,fail){
@@ -59,3 +60,5 @@ var posPlug={
     }
 };
 module.exports=posPlug;
+
+});
