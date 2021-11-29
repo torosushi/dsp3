@@ -87,8 +87,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 	public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
 		if(action.equals("scanQPos2Mode")) {
 			open(CommunicationMode.BLUETOOTH);//initial the open mode
-			boolean a=pos.scanQPos2Mode(activity, 10);
-			Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
+			//boolean a=pos.scanQPos2Mode(activity, 10);
+			//Toast.makeText(cordova.getActivity(), "scan success "+a, Toast.LENGTH_LONG).show();
 		}else if(action.equals("connectBluetoothDevice")){//connect
 			pos.stopScanQPos2Mode();
 			boolean isAutoConnect=args.getBoolean(0);
@@ -96,13 +96,14 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			int a = address.indexOf(" ");
 			address = address.substring(a+1);
 			TRACE.d("address==="+address);
-			pos.connectBluetoothDevice(isAutoConnect, 20, address);
+			boolean O_connected=pos.connectBluetoothDevice(isAutoConnect, 20, address);
 			blueToothAddress=address;
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isAutoConnect "+address,"onRequestQposConnected");
+			callbackJs("scanQPos2Mode|"+address+"|"+O_connected,"mposr");
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
 			pos.setFormatId("0008");
 			pos.doTrade(20);//Integer.parseInt(args.getString(0))
+			callbackJs("doTrade|"+new Throwable().getStackTrace()[0].getLineNumber(),"mposr");
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" doTrade ","onRequestQposConnected");
 		}else if(action.equals("getDeviceList")){//get all scaned devices
 			TRACE.w("getDeviceList===");
@@ -139,7 +140,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			String pinksn=args.getString(7);
 			String pinipek=args.getString(8);
 			String pinipekCheckvalue=args.getString(9);
-//        	pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
+			//pos.doUpdateIPEKOperation("00", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5", "09117081600001E00001", "413DF85BD9D9A7C34EDDB2D2B5CA0C0F", "6A52E41A7F91C9F5");
 			pos.doUpdateIPEKOperation(ipekGroup, trackksn, trackipek, trackipekCheckvalue, emvksn, emvipek, emvipekCheckvalue, pinksn, pinipek, pinipekCheckvalue);
 		}else if(action.equals("updateEmvApp")){//update the emv app config
 			list.add(EmvAppTag.Terminal_Default_Transaction_Qualifiers+"36C04000");
@@ -222,7 +223,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					pos.setAmount(args.getString(1),"","036",transactionType);
 					pos.setPosDisplayAmountFlag(false);
 					pos.setFormatId("0008");
-					//pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP); //no access to chip option
+					//pos.setCardTradeMode(QPOSService.CardTradeMode.SWIPE_TAP_INSERT_CARD_NOTUP);
+					//no access to chip option
 					pos.doTrade(30);
 					//pos.setAmount("7.50","","156",transactionType);
 					callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+type+" "+args.getString(1)+" "+args.getString(2),"onRequestQposConnected");
@@ -294,17 +296,15 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		listener = new MyPosListener();
 		pos = QPOSService.getInstance(mode);
 		if (pos == null) {
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode unknown ","onRequestQposConnected");
+			callbackJs("CommunicationMode|"+new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode unknown ","mposr");
 			TRACE.d("CommunicationMode unknow");
 			return;
 		}
 		pos.setConext(cordova.getActivity());
 		Handler handler = new Handler(Looper.myLooper());
 		pos.initListener(handler, listener);//audioJACK only?
-//		sdkVersion = pos.getSdkVersion();
-//		TRACE.i("sdkVersion:"+sdkVersion);
 		mAdapter=BluetoothAdapter.getDefaultAdapter();
-        callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode"+mAdapter.toString(),"onRequestQposConnected");
+        callbackJs("CommunicationMode|"+new Throwable().getStackTrace()[0].getLineNumber()+" CommunicationMode"+mAdapter.toString(),"mposr");
         if(mAdapter.isEnabled()){
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" isEnabled","onRequestQposConnected");
 			String devices="";
@@ -319,7 +319,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					devices +=device.getName()+"|"+device.getAddress();
 				i++;}
 				//callback(devices);
-                callbackJs(devices,"addrow");
+                callbackJs(devices,"mposc");
 			}				
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getBondedDevices size "+pairedDevices.size(),"onRequestQposConnected");
             callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" getBondedDevices "+devices,"onRequestQposConnected");
@@ -569,11 +569,12 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onDoTradeResult(DoTradeResult arg0, Hashtable<String, String> arg1) {
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult ","onRequestQposConnected");
-            String content="traderes: ";
+            //callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult ","onRequestQposConnected");
+            String content="traderes: ";String O_res="";
 			if (arg0 == DoTradeResult.NONE) {
 				TRACE.d("no_card_detected");content +="no_card_detected";
 			} else if (arg0 == DoTradeResult.ICC) {
+				callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" icc_card_inserted ","onRequestQposConnected");
 				TRACE.d("icc_card_inserted");
 				TRACE.d("EMV ICC Start");content +="ICC Start";
 				pos.doEmvApp(EmvOption.START);//do the icc card trade
@@ -648,7 +649,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					content += "maskedPAN" + " " + maskedPAN + ",";
 					content += "expiryDate" + " " + expiryDate + ",";
 					content += "cardHolderName" + " " + cardHolderName + ",";
-//					content += getString(R.string.ksn) + " " + ksn + ",";
+					//content += getString(R.string.ksn) + " " + ksn + ",";
 					content += "pinKsn" + " " + pinKsn + ",";
 					content += "trackksn" + " " + trackksn + ",";
 					content += "serviceCode" + " " + serviceCode + ",";
@@ -668,12 +669,13 @@ public class dspread_pos_plugin extends CordovaPlugin {
 					String cardNo = encTrack2.substring(0,index);
 					TRACE.d("cardNo/expire: " + cardNo + " - " +expiryDate);
 					content += "cardNo/expire: " + cardNo + " - " +expiryDate + "";
+					O_res+="card|"+cardNo+"|"+expiryDate;
 					callback(content);
 				}
 				TRACE.d("=====:" + content);
 			} else if ((arg0 == DoTradeResult.NFC_ONLINE) || (arg0 == DoTradeResult.NFC_OFFLINE)) {
 				TRACE.d(arg0+", arg1: " + arg1);
-//				nfcLog=arg1.get("nfcLog");
+			//nfcLog=arg1.get("nfcLog");
 				content += "tap_card";
 				String formatID = arg1.get("formatID");
 				if (formatID.equals("31") || formatID.equals("40")
@@ -751,13 +753,14 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				String str5A = (String) hashtable.get("tlv");
 				String cardNo = str5A.substring(4);
 				cardNo = QPOSUtil.convertHexToString(cardNo);
-				String expireDate = (String) hashtable2.get("tlv");
-				expireDate = expireDate.substring(6);
-				content +="cardNo/expire: "+cardNo+" - "+expireDate+" - hashtable: "+hashtable+" - "+expireDate;
+				String expiryDate = (String) hashtable2.get("tlv");
+				expiryDate = expiryDate.substring(6);
+				content +="cardNo/expire: "+cardNo+" - "+expiryDate+" - hashtable: "+hashtable+" - "+expiryDate;
 				//sendMsg(8003);
 				Hashtable<String, String> h=pos.getNFCBatchData();
 				//TRACE.w("nfc batchdata: "+h);
 				content += "NFCbatchData: "+h.get("tlv");
+				O_res+="card|"+cardNo+"|"+expiryDate;
 				callback(content);
 			} else if ((arg0 == DoTradeResult.NFC_DECLINED) ) {
 				TRACE.d("transaction_declined");
@@ -766,9 +769,10 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				TRACE.d("card_no_response");
                 content +="NO_RESPONSE";
 			}
+			callbackJs("onDoTradeResult|"+O_res,"mposr");
 			//Hashtable<String, String> h=pos.getNFCBatchData();
 			//content += "NFCbatchData: "+h.get("tlv");
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult "+content,"onRequestQposConnected");
+            //callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onDoTradeResult "+content,"onRequestQposConnected");
 		}
 
 		 //ascii码转为hex值
@@ -799,8 +803,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onError(Error arg0) {
 			TRACE.d("onError");
-            //String content ="";
-            callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError "+arg0,"onRequestQposConnected");
+			callbackJs("onError|"+arg0,"mposr");
+            //callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onError "+arg0,"onRequestQposConnected");
 			if (arg0 == Error.CMD_NOT_AVAILABLE) {
 				TRACE.d("command_not_available");
 			} else if (arg0 == Error.TIMEOUT) {
@@ -1008,11 +1012,11 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			content += "firmwareVersion" + firmwareVersion + "\n";
 			content += "isUsbConnected" + isUsbConnected + "\n";
 			content += "isCharging" + isCharging + "\n";
-//			if (batteryPercentage==null || "".equals(batteryPercentage)) {
+			//if (batteryPercentage==null || "".equals(batteryPercentage)) {
 			content += "batteryLevel" + batteryLevel + "\n";
-//			}else {
+			//}else {
 			content += "batteryPercentage"  + batteryPercentage + "\n";
-//			}
+			//}
 			content += "hardwareVersion" + hardwareVersion + "\n";
 			content += "SUB : " + SUB + "\n";
 			content += "isSupportedTrack1" + isSupportedTrack1 + "\n";
@@ -1094,7 +1098,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			} else if (arg0 == Display.PROCESSING) {
 				msg = "processing...";
 			} else if (arg0 == Display.INPUT_PIN_ING) {
-				msg = "please input pin on pos";
+				msg = "Press enter to continue..";//msg = "please input pin on pos";
 			} else if (arg0 == Display.MAG_TO_ICC_TRADE) {
 				msg = "please insert chip card on pos";
 			}else if (arg0 == Display.CARD_REMOVED) {
@@ -1129,6 +1133,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 
 		@Override
 		public void onRequestOnlineProcess(String arg0) {
+			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestOnlineProcess: "+arg0+" ","onRequestQposConnected");
 			TRACE.d("onRequestOnlineProcess");
 			TRACE.i("return transaction online data:"+arg0);
 			Hashtable<String, String> decodeData = pos.anlysEmvIccData(arg0);
@@ -1171,17 +1176,16 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				appNameList[i] = arg0.get(i);
 			}
 			pos.selectEmvApp(0);//choose one emv card
-//			pos.cancelSelectEmvApp();//cancel select the emv card config
+			//pos.cancelSelectEmvApp();//cancel select the emv card config
 		}
 
 		@Override
 		public void onRequestSetAmount() {
 			//the below list represent the transaction type
-//			String[] transactionTypes = new String[] {"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"};
+			//String[] transactionTypes = new String[] {"GOODS", "SERVICES", "CASHBACK", "INQUIRY", "TRANSFER", "PAYMENT","CHANGE_PIN","REFOUND"};
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" onRequestSetAmount enter amount,transtype","onRequestQposConnected");
-
-			pos.setPosDisplayAmountFlag(true);
-			pos.setAmount("12", "", "156", transactionType);/**/
+			pos.setPosDisplayAmountFlag(false);
+			pos.setAmount("1","","156",transactionType);/**/
 			TRACE.d("onRequestSetAmount");
 		}
 
@@ -1238,7 +1242,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 				TRACE.d("DEVICE_ERROR");
 			} else if(arg0 == TransactionResult.TRADE_LOG_FULL){
 				TRACE.d("pls clear the trace log and then to begin do trade");
-//				messageTextView.setText("the trade log has fulled!pls clear the trade log!");
+			//messageTextView.setText("the trade log has fulled!pls clear the trade log!");
 			}else if (arg0 == TransactionResult.CARD_NOT_SUPPORTED) {
 				TRACE.d("CARD_NOT_SUPPORTED");
 			} else if (arg0 == TransactionResult.MISSING_MANDATORY_DATA) {
@@ -1296,8 +1300,9 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		@Override
 		public void onRequestWaitingUser() {
 			TRACE.d("onRequestWaitingUser()");
-			callback("please insert/swipe/tap card");
-            callbackJs("please insert/swipe/tap card","onRequestQposConnected");
+			callbackJs("doTrade|Tap / swipe card / insert.","mposr");
+			//callback("please insert/swipe/tap card");
+            //callbackJs("please insert/swipe/tap card","onRequestQposConnected");
 		}
 
 		@Override
