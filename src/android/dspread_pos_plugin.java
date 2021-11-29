@@ -355,7 +355,7 @@ public class dspread_pos_plugin extends CordovaPlugin {
 			}
 		} else {
 			Log.e("BRG", "系统检测到未开启GPS定位服务");
-			Toast.makeText(activity, "系统检测到未开启GPS定位服务", Toast.LENGTH_SHORT).show();
+			Toast.makeText(activity, "Location service is not turned on", Toast.LENGTH_SHORT).show();
 			Intent intent = new Intent();
 			intent.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 			activity.startActivity(intent);
