@@ -102,7 +102,8 @@ public class dspread_pos_plugin extends CordovaPlugin {
 		}else if(action.equals("doTrade")){//start to do a trade
 			TRACE.d("native--> doTrade");
 			pos.setFormatId("0008");
-			pos.doTrade(20);//Integer.parseInt(args.getString(0))
+			//pos.doTrade(20);
+			pos.doTrade(Integer.parseInt(args.getString(0)));
 			callbackJs("doTrade|"+new Throwable().getStackTrace()[0].getLineNumber(),"mposr");
 			callbackJs(new Throwable().getStackTrace()[0].getLineNumber()+" doTrade ","onRequestQposConnected");
 		}else if(action.equals("getDeviceList")){//get all scaned devices
